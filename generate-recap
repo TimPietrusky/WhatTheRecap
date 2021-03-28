@@ -1,0 +1,34 @@
+#!/bin/bash
+input_video=$1
+chunks_amount=$2
+recap_length=$3
+
+# Get the total lenght of the video and convert the float into int
+total_length=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 $input_video)
+total_length=$( printf "%.0f" $total_length )
+
+echo "total lenght of the input video: $total_length"
+echo "---------------"
+
+# Length of one chunk based on the total amount of chunks
+chunk_length=$(($total_length / $chunks_amount))
+
+# Get rid of the old list
+rm mylist.txt
+
+# Generate chunks from the input video
+for (( i=0; i<$chunks_amount; i++ ))
+do
+    offset=$(($i * $chunk_length))
+    ffmpeg -y -ss $offset -i $input_video -t $recap_length output-$i.mp4
+    echo "file 'output-$i.mp4'" >> mylist.txt
+done
+
+# Concat the chunks
+ffmpeg -y -f concat -i mylist.txt -c copy recap.mp4
+
+# Remove all chunks
+rm output-*.mp4
+
+# ffmpeg -y -i recap.mp4 -filter_complex "afftfilt=real='hypot(re,im)*sin(0)':imag='hypot(re,im)*cos(0)':win_size=32:overlap=0.25" recap_distorted.mp4
+# ffmpeg -y -i recap_distorted.mp4 -filter_complex "amplify=factor:150" recap_extreme.mp4
