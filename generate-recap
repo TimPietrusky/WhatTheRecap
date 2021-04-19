@@ -3,6 +3,10 @@ input_video=$1
 chunks_amount=$2
 recap_length=$3
 
+# Get the filename without path and without fileextension
+filename=$(basename -- "$input_video")
+filename="${filename%.*}"
+
 # Get the total lenght of the video and convert the float into int
 total_length=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 $input_video)
 total_length=$( printf "%.0f" $total_length )
@@ -11,7 +15,7 @@ echo "total lenght of the input video: $total_length"
 echo "---------------"
 
 # Length of one chunk based on the total amount of chunks
-chunk_length=$(($total_length / $chunks_amount))
+chunk_length=$(($total_length / ($chunks_amount - 1)))
 
 # Get rid of the old list
 rm mylist.txt
@@ -25,7 +29,7 @@ do
 done
 
 # Concat the chunks
-ffmpeg -y -f concat -i mylist.txt -c copy recap.mp4
+ffmpeg -y -f concat -i mylist.txt -c copy $filename-recap.mp4
 
 # Remove all chunks
 rm output-*.mp4
