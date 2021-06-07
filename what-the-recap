@@ -3,6 +3,14 @@ input_video=$1
 chunks_amount=$2
 recap_length=$3
 
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "Missing arguments"
+    echo ""
+    echo "Usage:"
+    echo "what-the-recap <name_of_the_video> <chunks> <chunks_length>"
+    exit 1
+fi
+
 # Get the filename without path and without fileextension
 filename=$(basename -- "$input_video")
 filename="${filename%.*}"
